@@ -1,0 +1,120 @@
+# Discord Bot Configuration for Vice Infrastructure Monitoring
+
+discord:
+  token: ${DISCORD_TOKEN}
+  prefix: ${BOT_PREFIX:-!}
+  guild_id: ${DISCORD_GUILD_ID}
+  channel_id: ${DISCORD_CHANNEL_ID}
+  
+  # Bot permissions
+  permissions:
+    - send_messages
+    - read_message_history
+    - embed_links
+    - attach_files
+    - use_external_emojis
+    - add_reactions
+
+# Monitoring Configuration
+monitoring:
+  # Metrics collection interval (seconds)
+  metrics_interval: 30
+  
+  # Log collection settings
+  log_collection:
+    enabled: true
+    channels:
+      - "general"
+      - "admin"
+      - "logs"
+    max_messages: 1000
+    retention_days: 7
+    
+  # Alert settings
+  alerts:
+    enabled: true
+    webhook_url: ${DISCORD_WEBHOOK_URL}
+    mention_role: "admin"
+    
+  # Performance monitoring
+  performance:
+    track_response_time: true
+    track_command_usage: true
+    track_error_rate: true
+
+# Prometheus Configuration
+prometheus:
+  enabled: true
+  port: 8000
+  metrics_path: /metrics
+  
+  # Custom metrics
+  custom_metrics:
+    - discord_messages_processed_total
+    - discord_commands_executed_total
+    - discord_errors_total
+    - discord_response_time_seconds
+    - discord_guild_count
+    - discord_user_count
+    - discord_channel_count
+
+# Logging Configuration
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: logs/discord_bot.log
+  max_size: 10MB
+  backup_count: 5
+
+# Commands Configuration
+commands:
+  # Monitoring commands
+  monitoring:
+    - name: "status"
+      description: "Show system status"
+      enabled: true
+    - name: "metrics"
+      description: "Show current metrics"
+      enabled: true
+    - name: "alerts"
+      description: "Show active alerts"
+      enabled: true
+    - name: "logs"
+      description: "Show recent logs"
+      enabled: true
+      
+  # Admin commands
+  admin:
+    - name: "restart"
+      description: "Restart monitoring services"
+      enabled: true
+      admin_only: true
+    - name: "backup"
+      description: "Create backup"
+      enabled: true
+      admin_only: true
+    - name: "config"
+      description: "Show configuration"
+      enabled: true
+      admin_only: true
+
+# Security Configuration
+security:
+  # Allowed roles for admin commands
+  admin_roles:
+    - "Admin"
+    - "Moderator"
+    - "Owner"
+    
+  # Rate limiting
+  rate_limit:
+    enabled: true
+    max_commands: 10
+    time_window: 60  # seconds
+    
+  # Command cooldowns
+  cooldowns:
+    status: 30
+    metrics: 60
+    alerts: 30
+    logs: 120 

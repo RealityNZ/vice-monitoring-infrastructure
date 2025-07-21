@@ -1,0 +1,62 @@
+global:
+  resolve_timeout: 5m
+  slack_api_url: 'https://hooks.slack.com/services/YOUR_SLACK_WEBHOOK'
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'alertmanager@vice.com'
+  smtp_auth_username: 'your_email@gmail.com'
+  smtp_auth_password: 'your_app_password'
+
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'web.hook'
+  routes:
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      continue: true
+    - match:
+        category: discord-bot
+      receiver: 'discord-bot-alerts'
+    - match:
+        category: network
+      receiver: 'network-alerts'
+
+receivers:
+  - name: 'web.hook'
+    webhook_configs:
+      - url: 'http://127.0.0.1:5001/'
+
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'admin@vice.com'
+        send_resolved: true
+    slack_configs:
+      - channel: '#alerts'
+        title: 'Critical Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        send_resolved: true
+
+  - name: 'discord-bot-alerts'
+    webhook_configs:
+      - url: 'https://discord.com/api/webhooks/YOUR_DISCORD_WEBHOOK'
+        send_resolved: true
+
+  - name: 'network-alerts'
+    email_configs:
+      - to: 'network-admin@vice.com'
+        send_resolved: true
+    slack_configs:
+      - channel: '#network-alerts'
+        title: 'Network Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        send_resolved: true
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'dev', 'instance'] 

@@ -1,0 +1,134 @@
+groups:
+  - name: network-monitoring
+    rules:
+      # High Network Bandwidth Usage
+      - alert: HighNetworkBandwidth
+        expr: rate(node_network_receive_bytes_total[5m]) + rate(node_network_transmit_bytes_total[5m]) > 1000000000
+        for: 5m
+        labels:
+          severity: warning
+          category: network
+        annotations:
+          summary: "High network bandwidth usage on {{ $labels.instance }}"
+          description: "Network bandwidth usage is above 1GB/s for more than 5 minutes on {{ $labels.instance }}"
+
+      # Network Interface Down
+      - alert: NetworkInterfaceDown
+        expr: node_network_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: network
+        annotations:
+          summary: "Network interface down on {{ $labels.instance }}"
+          description: "Network interface {{ $labels.device }} is down on {{ $labels.instance }}"
+
+      # High Network Errors
+      - alert: HighNetworkErrors
+        expr: rate(node_network_receive_errs_total[5m]) + rate(node_network_transmit_errs_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          category: network
+        annotations:
+          summary: "High network errors on {{ $labels.instance }}"
+          description: "Network error rate is high on {{ $labels.device }} for more than 5 minutes on {{ $labels.instance }}"
+
+      # High Network Drops
+      - alert: HighNetworkDrops
+        expr: rate(node_network_receive_drop_total[5m]) + rate(node_network_transmit_drop_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          category: network
+        annotations:
+          summary: "High network drops on {{ $labels.instance }}"
+          description: "Network drop rate is high on {{ $labels.device }} for more than 5 minutes on {{ $labels.instance }}"
+
+      # TCP Connection States
+      - alert: HighTCPConnections
+        expr: node_netstat_Tcp_CurrEstab > 10000
+        for: 5m
+        labels:
+          severity: warning
+          category: network
+        annotations:
+          summary: "High TCP connections on {{ $labels.instance }}"
+          description: "TCP connections are above 10,000 for more than 5 minutes on {{ $labels.instance }}"
+
+      # TCP Listen Queue
+      - alert: TCPListenQueueFull
+        expr: node_netstat_Tcp_ListenOverflows > 0
+        for: 1m
+        labels:
+          severity: warning
+          category: network
+        annotations:
+          summary: "TCP listen queue overflow on {{ $labels.instance }}"
+          description: "TCP listen queue is overflowing on {{ $labels.instance }}"
+
+      # Network Interface Speed Mismatch
+      - alert: NetworkSpeedMismatch
+        expr: node_network_speed_bytes < 100000000
+        for: 5m
+        labels:
+          severity: info
+          category: network
+        annotations:
+          summary: "Network interface speed mismatch on {{ $labels.instance }}"
+          description: "Network interface {{ $labels.device }} is running at less than 100MB/s on {{ $labels.instance }}"
+
+      # DNS Resolution Issues
+      - alert: DNSResolutionFailure
+        expr: rate(dns_probe_failures_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          category: network
+        annotations:
+          summary: "DNS resolution failures on {{ $labels.instance }}"
+          description: "DNS resolution is failing on {{ $labels.instance }}"
+
+      # HTTP Response Time
+      - alert: HighHTTPResponseTime
+        expr: http_request_duration_seconds{quantile="0.95"} > 2
+        for: 5m
+        labels:
+          severity: warning
+          category: network
+        annotations:
+          summary: "High HTTP response time on {{ $labels.instance }}"
+          description: "95th percentile HTTP response time is above 2 seconds on {{ $labels.instance }}"
+
+      # SSL Certificate Expiry
+      - alert: SSLCertificateExpiringSoon
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 30
+        for: 0m
+        labels:
+          severity: warning
+          category: network
+        annotations:
+          summary: "SSL certificate expiring soon on {{ $labels.instance }}"
+          description: "SSL certificate will expire within 30 days on {{ $labels.instance }}"
+
+      # Network Latency
+      - alert: HighNetworkLatency
+        expr: ping_rtt_seconds > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          category: network
+        annotations:
+          summary: "High network latency on {{ $labels.instance }}"
+          description: "Network latency is above 100ms for more than 5 minutes on {{ $labels.instance }}"
+
+      # Packet Loss
+      - alert: HighPacketLoss
+        expr: ping_packet_loss > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          category: network
+        annotations:
+          summary: "High packet loss on {{ $labels.instance }}"
+          description: "Packet loss is above 5% for more than 5 minutes on {{ $labels.instance }}" 

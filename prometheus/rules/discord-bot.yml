@@ -1,0 +1,167 @@
+groups:
+  - name: discord-bot
+    rules:
+      # Discord Bot Down
+      - alert: DiscordBotDown
+        expr: up{job="discord-bot"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: discord-bot
+        annotations:
+          summary: "Discord bot is down"
+          description: "Discord bot has been down for more than 1 minute"
+
+      # Discord Bot High Response Time
+      - alert: DiscordBotHighResponseTime
+        expr: discord_bot_response_time_seconds > 5
+        for: 5m
+        labels:
+          severity: warning
+          category: discord-bot
+        annotations:
+          summary: "Discord bot high response time"
+          description: "Discord bot response time is above 5 seconds for more than 5 minutes"
+
+      # Discord Bot High Error Rate
+      - alert: DiscordBotHighErrorRate
+        expr: rate(discord_bot_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          category: discord-bot
+        annotations:
+          summary: "Discord bot high error rate"
+          description: "Discord bot error rate is above 0.1 errors per second for more than 5 minutes"
+
+      # Discord Bot Connection Issues
+      - alert: DiscordBotConnectionIssues
+        expr: discord_bot_connection_status == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: discord-bot
+        annotations:
+          summary: "Discord bot connection issues"
+          description: "Discord bot is having connection issues"
+
+      # Discord Bot High Memory Usage
+      - alert: DiscordBotHighMemoryUsage
+        expr: process_resident_memory_bytes{job="discord-bot"} > 500000000
+        for: 5m
+        labels:
+          severity: warning
+          category: discord-bot
+        annotations:
+          summary: "Discord bot high memory usage"
+          description: "Discord bot memory usage is above 500MB for more than 5 minutes"
+
+      # Discord Bot High CPU Usage
+      - alert: DiscordBotHighCPUUsage
+        expr: rate(process_cpu_seconds_total{job="discord-bot"}[5m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: discord-bot
+        annotations:
+          summary: "Discord bot high CPU usage"
+          description: "Discord bot CPU usage is above 80% for more than 5 minutes"
+
+      # Discord Bot Message Processing Errors
+      - alert: DiscordBotMessageProcessingErrors
+        expr: rate(discord_bot_message_processing_errors_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          category: discord-bot
+        annotations:
+          summary: "Discord bot message processing errors"
+          description: "Discord bot message processing error rate is above 0.05 errors per second for more than 5 minutes"
+
+      # Discord Bot Command Execution Errors
+      - alert: DiscordBotCommandExecutionErrors
+        expr: rate(discord_bot_command_execution_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          category: discord-bot
+        annotations:
+          summary: "Discord bot command execution errors"
+          description: "Discord bot command execution error rate is above 0.1 errors per second for more than 5 minutes"
+
+      # Discord Bot API Rate Limiting
+      - alert: DiscordBotAPIRateLimiting
+        expr: discord_bot_api_rate_limit_hits_total > 0
+        for: 1m
+        labels:
+          severity: warning
+          category: discord-bot
+        annotations:
+          summary: "Discord bot API rate limiting"
+          description: "Discord bot is hitting API rate limits"
+
+      # Discord Bot Message Queue Backlog
+      - alert: DiscordBotMessageQueueBacklog
+        expr: discord_bot_message_queue_size > 100
+        for: 5m
+        labels:
+          severity: warning
+          category: discord-bot
+        annotations:
+          summary: "Discord bot message queue backlog"
+          description: "Discord bot message queue has more than 100 pending messages for more than 5 minutes"
+
+      # Discord Bot Heartbeat Issues
+      - alert: DiscordBotHeartbeatIssues
+        expr: discord_bot_heartbeat_latency_seconds > 1
+        for: 5m
+        labels:
+          severity: warning
+          category: discord-bot
+        annotations:
+          summary: "Discord bot heartbeat issues"
+          description: "Discord bot heartbeat latency is above 1 second for more than 5 minutes"
+
+      # Discord Bot Guild Count Changes
+      - alert: DiscordBotGuildCountChanges
+        expr: abs(discord_bot_guild_count - discord_bot_guild_count offset 5m) > 5
+        for: 1m
+        labels:
+          severity: info
+          category: discord-bot
+        annotations:
+          summary: "Discord bot guild count changes"
+          description: "Discord bot guild count has changed by more than 5 in the last 5 minutes"
+
+      # Discord Bot User Count Changes
+      - alert: DiscordBotUserCountChanges
+        expr: abs(discord_bot_user_count - discord_bot_user_count offset 5m) > 100
+        for: 1m
+        labels:
+          severity: info
+          category: discord-bot
+        annotations:
+          summary: "Discord bot user count changes"
+          description: "Discord bot user count has changed by more than 100 in the last 5 minutes"
+
+      # Discord Bot Channel Activity
+      - alert: DiscordBotChannelActivity
+        expr: rate(discord_bot_messages_processed_total[5m]) < 0.1
+        for: 10m
+        labels:
+          severity: info
+          category: discord-bot
+        annotations:
+          summary: "Discord bot low channel activity"
+          description: "Discord bot has processed less than 0.1 messages per second for more than 10 minutes"
+
+      # Discord Bot Log Collection Issues
+      - alert: DiscordBotLogCollectionIssues
+        expr: rate(discord_bot_log_collection_errors_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          category: discord-bot
+        annotations:
+          summary: "Discord bot log collection issues"
+          description: "Discord bot is experiencing log collection errors for more than 5 minutes" 

@@ -1,0 +1,118 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'vice-infrastructure'
+
+rule_files:
+  - "rules/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 10s
+
+  # Node Exporter - Linux System Metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+    metrics_path: /metrics
+    honor_labels: true
+
+  # cAdvisor - Container Metrics
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # Discord Bot Metrics
+  - job_name: 'discord-bot'
+    static_configs:
+      - targets: ['discord-bot:8000']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    honor_labels: true
+
+  # Grafana Metrics
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Alertmanager Metrics
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets: ['alertmanager:9093']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Linux Hosts - External Targets
+  - job_name: 'linux-hosts'
+    file_sd_configs:
+      - files:
+        - 'targets/linux-hosts.yml'
+    scrape_interval: 30s
+    metrics_path: /metrics
+    honor_labels: true
+    scrape_timeout: 10s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - source_labels: [__meta_consul_service]
+        target_label: job
+
+  # Network Monitoring
+  - job_name: 'network-monitoring'
+    static_configs:
+      - targets: 
+        - '172.236.225.9:9100'    # Vice-DB-One (Monitoring Host)
+        - '172.236.225.9:8080'    # Vice-DB-One cAdvisor
+        - '172.235.32.153:9100'   # Vice-Bot-One
+        - '172.233.137.104:9100'  # Vice-Bot-Two
+    scrape_interval: 15s
+    metrics_path: /metrics
+    honor_labels: true
+    scrape_timeout: 10s
+
+  # Blackbox Exporter for HTTP/HTTPS monitoring
+  - job_name: 'blackbox-http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - http://grafana:3000
+        - http://prometheus:9090
+        - http://discord-bot:8000/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # Service Discovery for Dynamic Targets
+  - job_name: 'service-discovery'
+    consul_sd_configs:
+      - server: 'consul:8500'
+        services: ['monitoring']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    honor_labels: true
+    relabel_configs:
+      - source_labels: [__meta_consul_service]
+        target_label: job
+      - source_labels: [__meta_consul_node]
+        target_label: instance 

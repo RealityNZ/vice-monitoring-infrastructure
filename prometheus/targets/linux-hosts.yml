@@ -1,0 +1,10 @@
+- targets:
+  - '172.236.225.9:9100'    # Vice-DB-One (Monitoring Host)
+  - '172.235.32.153:9100'   # Vice-Bot-One
+  - '172.233.137.104:9100'  # Vice-Bot-Two
+  labels:
+    job: 'linux-hosts'
+    environment: 'production'
+    datacenter: 'vice-dc-1'
+    os: 'linux'
+    role: 'server' 

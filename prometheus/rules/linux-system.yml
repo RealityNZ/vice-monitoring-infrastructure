@@ -1,0 +1,112 @@
+groups:
+  - name: linux-system
+    rules:
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 80% for more than 5 minutes on {{ $labels.instance }}"
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 85% for more than 5 minutes on {{ $labels.instance }}"
+
+      # High Disk Usage
+      - alert: HighDiskUsage
+        expr: (node_filesystem_size_bytes - node_filesystem_free_bytes) / node_filesystem_size_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High disk usage on {{ $labels.instance }}"
+          description: "Disk usage is above 85% for more than 5 minutes on {{ $labels.instance }}"
+
+      # High Load Average
+      - alert: HighLoadAverage
+        expr: node_load1 > count by(instance) (node_cpu_seconds_total{mode="idle"}) * 0.8
+        for: 5m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High load average on {{ $labels.instance }}"
+          description: "Load average is above 80% of CPU cores for more than 5 minutes on {{ $labels.instance }}"
+
+      # System Uptime
+      - alert: SystemUptime
+        expr: node_boot_time_seconds < time() - 86400 * 7
+        for: 0m
+        labels:
+          severity: info
+          category: system
+        annotations:
+          summary: "System uptime on {{ $labels.instance }}"
+          description: "System has been running for more than 7 days on {{ $labels.instance }}"
+
+      # File Descriptors
+      - alert: HighFileDescriptors
+        expr: node_filefd_allocated / node_filefd_maximum * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High file descriptor usage on {{ $labels.instance }}"
+          description: "File descriptor usage is above 80% for more than 5 minutes on {{ $labels.instance }}"
+
+      # Network Interface Down
+      - alert: NetworkInterfaceDown
+        expr: node_network_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: network
+        annotations:
+          summary: "Network interface down on {{ $labels.instance }}"
+          description: "Network interface {{ $labels.device }} is down on {{ $labels.instance }}"
+
+      # High Network Errors
+      - alert: HighNetworkErrors
+        expr: rate(node_network_receive_errs_total[5m]) + rate(node_network_transmit_errs_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          category: network
+        annotations:
+          summary: "High network errors on {{ $labels.instance }}"
+          description: "Network error rate is high on {{ $labels.device }} for more than 5 minutes on {{ $labels.instance }}"
+
+      # Process Count
+      - alert: HighProcessCount
+        expr: node_procs_running > 500
+        for: 5m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High process count on {{ $labels.instance }}"
+          description: "Running process count is above 500 for more than 5 minutes on {{ $labels.instance }}"
+
+      # Temperature Monitoring (if available)
+      - alert: HighTemperature
+        expr: node_hwmon_temp_celsius > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: hardware
+        annotations:
+          summary: "High temperature on {{ $labels.instance }}"
+          description: "Temperature is above 80°C for more than 5 minutes on {{ $labels.instance }}" 
