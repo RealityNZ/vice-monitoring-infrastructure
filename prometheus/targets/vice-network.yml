@@ -1,0 +1,59 @@
+# Vice Network Infrastructure Monitoring Targets
+# This file defines all the targets that Prometheus should monitor
+
+# Monitoring Host (Vice-AS-01)
+- targets:
+  - '172.236.225.9:9100'    # Vice-AS-01 - Node Exporter
+  - '172.236.225.9:8080'    # Vice-AS-01 - cAdvisor
+  - '172.236.225.9:9090'    # Vice-AS-01 - Prometheus
+  - '172.236.225.9:3000'    # Vice-AS-01 - Grafana
+  - '172.236.225.9:9093'    # Vice-AS-01 - Alertmanager
+  labels:
+    job: 'vice-as-01'
+    environment: 'production'
+    datacenter: 'vice-dc-1'
+    os: 'linux'
+    role: 'monitoring-host'
+    hostname: 'vice-as-01'
+
+# Bot Hosts
+- targets:
+  - '172.235.32.153:9100'   # Vice-Bot-One - Node Exporter
+  - '172.233.137.104:9100'  # Vice-Bot-Two - Node Exporter
+  labels:
+    job: 'vice-bots'
+    environment: 'production'
+    datacenter: 'vice-dc-1'
+    os: 'linux'
+    role: 'bot-host'
+
+# Individual Bot Hosts (for detailed monitoring)
+- targets:
+  - '172.235.32.153:9100'   # Vice-Bot-One
+  labels:
+    job: 'vice-bot-one'
+    environment: 'production'
+    datacenter: 'vice-dc-1'
+    os: 'linux'
+    role: 'bot-host'
+    hostname: 'vice-bot-one'
+
+- targets:
+  - '172.233.137.104:9100'  # Vice-Bot-Two
+  labels:
+    job: 'vice-bot-two'
+    environment: 'production'
+    datacenter: 'vice-dc-1'
+    os: 'linux'
+    role: 'bot-host'
+    hostname: 'vice-bot-two'
+
+# Network Services (if any additional services are added)
+- targets:
+  - '172.236.225.9:80'      # Vice-AS-01 - HTTP (if web services are added)
+  - '172.236.225.9:443'     # Vice-AS-01 - HTTPS (if SSL services are added)
+  labels:
+    job: 'vice-network-services'
+    environment: 'production'
+    datacenter: 'vice-dc-1'
+    role: 'network-service' 

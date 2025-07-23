@@ -49,11 +49,11 @@ scrape_configs:
     scrape_interval: 30s
     metrics_path: /metrics
 
-  # Linux Hosts - External Targets
-  - job_name: 'linux-hosts'
+  # Vice Network Infrastructure - External Targets
+  - job_name: 'vice-network'
     file_sd_configs:
       - files:
-        - 'targets/linux-hosts.yml'
+        - 'targets/vice-network.yml'
     scrape_interval: 30s
     metrics_path: /metrics
     honor_labels: true
