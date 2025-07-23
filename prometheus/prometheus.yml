@@ -35,13 +35,7 @@ scrape_configs:
     scrape_interval: 15s
     metrics_path: /metrics
 
-  # Discord Bot Metrics
-  - job_name: 'discord-bot'
-    static_configs:
-      - targets: ['discord-bot:8000']
-    scrape_interval: 30s
-    metrics_path: /metrics
-    honor_labels: true
+
 
   # Grafana Metrics
   - job_name: 'grafana'
@@ -85,34 +79,6 @@ scrape_configs:
     honor_labels: true
     scrape_timeout: 10s
 
-  # Blackbox Exporter for HTTP/HTTPS monitoring
-  - job_name: 'blackbox-http'
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-        - http://grafana:3000
-        - http://prometheus:9090
-        - http://discord-bot:8000/health
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter:9115
 
-  # Service Discovery for Dynamic Targets
-  - job_name: 'service-discovery'
-    consul_sd_configs:
-      - server: 'consul:8500'
-        services: ['monitoring']
-    scrape_interval: 30s
-    metrics_path: /metrics
-    honor_labels: true
-    relabel_configs:
-      - source_labels: [__meta_consul_service]
-        target_label: job
-      - source_labels: [__meta_consul_node]
-        target_label: instance 
+
+ 
