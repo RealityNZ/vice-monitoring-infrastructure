@@ -19,7 +19,7 @@
 # Bot Hosts
 - targets:
   - '172.235.32.153:9100'   # Vice-Bot-One - Node Exporter
-  - '172.233.137.104:9100'  # Vice-Bot-Two - Node Exporter
+  - '172.236.228.231:9100'  # Vice-Bot-Two - Node Exporter
   labels:
     job: 'vice-bots'
     environment: 'production'
@@ -39,7 +39,7 @@
     hostname: 'vice-bot-one'
 
 - targets:
-  - '172.233.137.104:9100'  # Vice-Bot-Two
+  - '172.236.228.231:9100'  # Vice-Bot-Two
   labels:
     job: 'vice-bot-two'
     environment: 'production'

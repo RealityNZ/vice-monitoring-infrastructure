@@ -97,7 +97,7 @@ ufw allow from $YOUR_IP to any port 8080  # cAdvisor
 
 # Allow internal network access (for monitoring other hosts)
 ufw allow from 172.235.32.153 to any port 9100  # Vice-Bot-One
-ufw allow from 172.233.137.104 to any port 9100  # Vice-Bot-Two
+ufw allow from 172.236.228.231 to any port 9100  # Vice-Bot-Two
 
 # Enable firewall
 ufw --force enable

@@ -64,7 +64,7 @@ echo "   - Alertmanager: 172.236.225.9:9093"
 echo ""
 echo "🤖 Bot Hosts:"
 echo "   - Vice-Bot-One: 172.235.32.153:9100"
-echo "   - Vice-Bot-Two: 172.233.137.104:9100"
+echo "   - Vice-Bot-Two: 172.236.228.231:9100"
 echo ""
 
 print_success "Target configuration updated!"

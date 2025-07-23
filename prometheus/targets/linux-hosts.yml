@@ -1,7 +1,7 @@
 - targets:
   - '172.236.225.9:9100'    # Vice-AS-01 (Monitoring Host)
   - '172.235.32.153:9100'   # Vice-Bot-One
-  - '172.233.137.104:9100'  # Vice-Bot-Two
+  - '172.236.228.231:9100'  # Vice-Bot-Two
   labels:
     job: 'linux-hosts'
     environment: 'production'

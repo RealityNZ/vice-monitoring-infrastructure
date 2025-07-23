@@ -23,7 +23,7 @@ This guide provides specific deployment instructions for the Vice Infrastructure
 │  │ │ cAdvisor    │ │                                       │
 │  │ └─────────────┘ │    ┌─────────────────┐                │
 │  └─────────────────┘    │   Vice-Bot-Two  │                │
-│                         │ 172.233.137.104 │                │
+│                         │ 172.236.228.231 │                │
 │                         │                 │                │
 │                         │ ┌─────────────┐ │                │
 │                         │ │ Node Exporter│ │                │
@@ -57,7 +57,7 @@ This guide provides specific deployment instructions for the Vice Infrastructure
 #### Port Configuration:
 - **9100**: Node Exporter (System metrics)
 
-### Vice-Bot-Two (172.233.137.104) - Target Host
+### Vice-Bot-Two (172.236.228.231) - Target Host
 
 **Role**: Monitored target
 **Services**: Node Exporter
@@ -156,11 +156,11 @@ sudo systemctl start node_exporter
 curl http://localhost:9100/metrics
 ```
 
-#### On Vice-Bot-Two (172.233.137.104):
+#### On Vice-Bot-Two (172.236.228.231):
 
 ```bash
 # SSH to Vice-Bot-Two
-ssh user@172.233.137.104
+ssh user@172.236.228.231
 
 # Repeat the same installation steps as above
 wget https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz
@@ -210,7 +210,7 @@ sudo ufw allow 8000/tcp  # Discord Bot
 
 # Allow outbound connections to target hosts
 sudo ufw allow out 9100/tcp to 172.235.32.153
-sudo ufw allow out 9100/tcp to 172.233.137.104
+sudo ufw allow out 9100/tcp to 172.236.228.231
 ```
 
 #### On Vice-Bot-One (172.235.32.153):
@@ -223,7 +223,7 @@ sudo ufw allow 9100/tcp
 sudo ufw allow from 172.236.225.9 to any port 9100
 ```
 
-#### On Vice-Bot-Two (172.233.137.104):
+#### On Vice-Bot-Two (172.236.228.231):
 
 ```bash
 # Allow Node Exporter port
@@ -245,7 +245,7 @@ curl http://localhost:9090/api/v1/targets | jq '.data.activeTargets[] | {job: .l
 Expected output should show:
 - `172.236.225.9:9100` (UP)
 - `172.235.32.153:9100` (UP)
-- `172.233.137.104:9100` (UP)
+- `172.236.228.231:9100` (UP)
 
 #### Check Grafana:
 
@@ -279,7 +279,7 @@ curl http://172.236.225.9:9093/api/v1/status
 
 - **Vice-DB-One Node Exporter**: http://172.236.225.9:9100/metrics
 - **Vice-Bot-One Node Exporter**: http://172.235.32.153:9100/metrics
-- **Vice-Bot-Two Node Exporter**: http://172.233.137.104:9100/metrics
+- **Vice-Bot-Two Node Exporter**: http://172.236.228.231:9100/metrics
 - **Discord Bot Metrics**: http://172.236.225.9:8000/metrics
 
 ## Monitoring Configuration
@@ -297,7 +297,7 @@ The system is configured to monitor:
 2. **Vice-Bot-One (172.235.32.153)**:
    - System metrics (Node Exporter)
 
-3. **Vice-Bot-Two (172.233.137.104)**:
+3. **Vice-Bot-Two (172.236.228.231)**:
    - System metrics (Node Exporter)
 
 ### Alert Rules:
@@ -360,7 +360,7 @@ Once deployed, the bot will respond to:
 ```bash
 # Check network connectivity
 telnet 172.235.32.153 9100
-telnet 172.233.137.104 9100
+telnet 172.236.228.231 9100
 
 # Check firewall rules
 sudo ufw status
@@ -428,6 +428,6 @@ For issues specific to your Vice network:
 
 **Network Configuration Summary:**
 - **Monitoring Host**: Vice-DB-One (172.236.225.9)
-- **Target Hosts**: Vice-Bot-One (172.235.32.153), Vice-Bot-Two (172.233.137.104)
+- **Target Hosts**: Vice-Bot-One (172.235.32.153), Vice-Bot-Two (172.236.228.231)
 - **Monitoring Stack**: Prometheus, Grafana, Alertmanager, Discord Bot
 - **Target Services**: Node Exporter on all hosts 

@@ -100,7 +100,7 @@ The repository is pre-configured for your Vice network:
 - **Monitoring Host**: Vice-DB-One (172.236.225.9)
 - **Target Hosts**: 
   - Vice-Bot-One (172.235.32.153)
-  - Vice-Bot-Two (172.233.137.104)
+  - Vice-Bot-Two (172.236.228.231)
 
 ## Security Notes
 
