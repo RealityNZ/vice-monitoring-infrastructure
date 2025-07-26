@@ -3,6 +3,7 @@ resource "proxmox_vm_qemu" "vice_awx" {
   name        = "vice-awx"
   desc        = "AWX/Ansible Automation Server for VICE Infrastructure"
   target_node = var.pve_node_a
+  provider    = proxmox.pve_node_a
   clone       = "ubuntu-22.04-template"
   full_clone  = true
   cores       = 4
@@ -54,6 +55,7 @@ resource "proxmox_vm_qemu" "vice_terraform_backend" {
   name        = "vice-terraform-backend"
   desc        = "Terraform State Backend Server"
   target_node = var.pve_node_a
+  provider    = proxmox.pve_node_a
   clone       = "ubuntu-22.04-template"
   full_clone  = true
   cores       = 2

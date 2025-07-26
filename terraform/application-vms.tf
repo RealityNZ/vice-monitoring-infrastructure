@@ -3,6 +3,7 @@ resource "proxmox_vm_qemu" "vice_bot_one" {
   name        = "vice-bot-one"
   desc        = "VICE Discord Bot Instance One"
   target_node = var.pve_node_b
+  provider    = proxmox.pve_node_b
   clone       = "ubuntu-22.04-template"
   full_clone  = true
   cores       = 2
@@ -53,6 +54,7 @@ resource "proxmox_vm_qemu" "vice_bot_two" {
   name        = "vice-bot-two"
   desc        = "VICE Discord Bot Instance Two"
   target_node = var.pve_node_b
+  provider    = proxmox.pve_node_b
   clone       = "ubuntu-22.04-template"
   full_clone  = true
   cores       = 2
@@ -102,6 +104,7 @@ resource "proxmox_vm_qemu" "vice_as01" {
   name        = "vice-as01"
   desc        = "VICE Application Server One"
   target_node = var.pve_node_b
+  provider    = proxmox.pve_node_b
   clone       = "ubuntu-22.04-template"
   full_clone  = true
   cores       = 4
@@ -150,6 +153,7 @@ resource "proxmox_vm_qemu" "vice_node_exporter_b" {
   name        = "vice-node-exporter-b"
   desc        = "Node Exporter for PVE Node B monitoring"
   target_node = var.pve_node_b
+  provider    = proxmox.pve_node_b
   clone       = "ubuntu-22.04-template"
   full_clone  = true
   cores       = 1

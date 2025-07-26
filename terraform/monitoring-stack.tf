@@ -3,6 +3,7 @@ resource "proxmox_vm_qemu" "vice_monitoring" {
   name        = "vice-monitoring"
   desc        = "VICE Monitoring Stack - Prometheus, Grafana, Alertmanager"
   target_node = var.pve_node_a
+  provider    = proxmox.pve_node_a
   clone       = "ubuntu-22.04-template"
   full_clone  = true
   cores       = 4
@@ -62,6 +63,7 @@ resource "proxmox_vm_qemu" "vice_node_exporter_a" {
   name        = "vice-node-exporter-a"
   desc        = "Node Exporter for PVE Node A monitoring"
   target_node = var.pve_node_a
+  provider    = proxmox.pve_node_a
   clone       = "ubuntu-22.04-template"
   full_clone  = true
   cores       = 1

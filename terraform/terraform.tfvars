@@ -1,13 +1,12 @@
 # Proxmox VE API Configuration - Node A (172.16.20.100)
 pve_api_url = "https://172.16.20.100:8006/api2/json"
 pve_token_id = "root@pam!vice-infrastructure"
-pve_token_secret = "5941012d-e16b-4f2e-8246-94de80b3a90e"
+pve_token_secret = "c2b18334-3943-48c2-91c9-54159cfcaedd"
 
-# Proxmox VE API Configuration - Node B (192.16.20.200)
-# Note: We'll need to handle Node B separately or create a different approach
-# pve_api_url_b = "https://192.16.20.200:8006/api2/json"
-# pve_token_id_b = "root@pam!vice-infrastructure"
-# pve_token_secret_b = "664c80f3-f275-4d16-b2d5-47a2dcfebfd6"
+# Proxmox VE API Configuration - Node B (172.16.20.200)
+pve_api_url_b = "https://172.16.20.200:8006/api2/json"
+pve_token_id_b = "root@pam!vice-infrastructure"
+pve_token_secret_b = "9a96a636-2bda-4ca5-9d37-0801b31a45b0"
 
 # PVE Node Hostnames
 pve_node_a = "PR-PVE-01"
