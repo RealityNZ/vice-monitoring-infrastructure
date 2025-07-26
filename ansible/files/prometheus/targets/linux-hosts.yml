@@ -1,0 +1,9 @@
+- targets:
+  - "172.16.20.10:9100"  # vice-monitoring
+  - "172.16.20.11:9100"  # vice-node-exporter-a
+  - "172.16.20.31:9100"  # vice-node-exporter-b
+  - "172.16.20.30:9100"  # vice-as01
+  labels:
+    job: "node-exporter"
+    environment: "production"
+    service: "linux-system" 

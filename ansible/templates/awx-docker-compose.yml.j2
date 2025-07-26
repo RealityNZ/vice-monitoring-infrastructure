@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  awx:
+    image: ansible/awx:latest
+    container_name: awx
+    restart: unless-stopped
+    ports:
+      - "{{ awx_port }}:8052"
+    environment:
+      - AWX_ADMIN_USER=admin
+      - AWX_ADMIN_PASSWORD={{ awx_admin_password | default('admin') }}
+      - AWX_DB_HOST=awx-postgres
+      - AWX_DB_PORT=5432
+      - AWX_DB_NAME=awx
+      - AWX_DB_USERNAME=awx
+      - AWX_DB_PASSWORD={{ awx_db_password | default('awx') }}
+      - AWX_REDIS_HOST=awx-redis
+      - AWX_REDIS_PORT=6379
+    depends_on:
+      - awx-postgres
+      - awx-redis
+    volumes:
+      - awx_data:/var/lib/awx
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+    networks:
+      - awx
+
+  awx-postgres:
+    image: postgres:13
+    container_name: awx-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=awx
+      - POSTGRES_USER=awx
+      - POSTGRES_PASSWORD={{ awx_db_password | default('awx') }}
+    volumes:
+      - awx_postgres_data:/var/lib/postgresql/data
+    networks:
+      - awx
+
+  awx-redis:
+    image: redis:6-alpine
+    container_name: awx-redis
+    restart: unless-stopped
+    networks:
+      - awx
+
+volumes:
+  awx_data:
+  awx_postgres_data:
+
+networks:
+  awx:
+    driver: bridge 

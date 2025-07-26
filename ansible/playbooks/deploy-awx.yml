@@ -1,0 +1,148 @@
+---
+- name: Deploy AWX/Ansible Automation Server
+  hosts: automation
+  become: yes
+  vars_files:
+    - ../vars/vault.yml
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      apt:
+        name:
+          - docker.io
+          - docker-compose
+          - python3
+          - python3-pip
+          - git
+          - curl
+          - wget
+        state: present
+
+    - name: Add user to docker group
+      user:
+        name: vice
+        groups: docker
+        append: yes
+
+    - name: Create AWX directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: vice
+        group: vice
+        mode: '0755'
+      loop:
+        - /home/vice/awx
+        - /home/vice/awx/projects
+        - /home/vice/awx/inventories
+        - /home/vice/awx/playbooks
+        - /home/vice/ansible
+        - /home/vice/ansible/roles
+
+    - name: Install AWX via Docker Compose
+      copy:
+        src: "{{ playbook_dir }}/../files/awx-docker-compose.yml"
+        dest: /home/vice/awx/docker-compose.yml
+        owner: vice
+        group: vice
+        mode: '0644'
+
+    - name: Create AWX environment file
+      template:
+        src: "{{ playbook_dir }}/../templates/awx.env.j2"
+        dest: /home/vice/awx/.env
+        owner: vice
+        group: vice
+        mode: '0600'
+      vars:
+        awx_admin_password: "{{ awx_admin_password }}"
+        postgres_password: "{{ postgres_password }}"
+        redis_password: "{{ redis_password }}"
+
+    - name: Start AWX
+      docker_compose:
+        project_src: /home/vice/awx
+        state: present
+      become_user: vice
+
+    - name: Wait for AWX to be ready
+      uri:
+        url: "http://localhost:8052/api/v2/ping/"
+        method: GET
+        status_code: 200
+      register: awx_status
+      retries: 30
+      delay: 10
+      until: awx_status is succeeded
+
+    - name: Create AWX configuration
+      template:
+        src: "{{ playbook_dir }}/../templates/awx-config.yml.j2"
+        dest: /home/vice/awx/awx-config.yml
+        owner: vice
+        group: vice
+        mode: '0644'
+
+    - name: Copy VICE Ansible playbooks
+      copy:
+        src: "{{ playbook_dir }}/../"
+        dest: /home/vice/ansible/
+        owner: vice
+        group: vice
+        mode: '0644'
+
+    - name: Create AWX project
+      uri:
+        url: "http://localhost:8052/api/v2/projects/"
+        method: POST
+        headers:
+          Content-Type: application/json
+        user: admin
+        password: "{{ awx_admin_password }}"
+        body_format: json
+        body: |
+          {
+            "name": "VICE Infrastructure",
+            "description": "VICE Infrastructure Automation",
+            "organization": 1,
+            "scm_type": "git",
+            "scm_url": "{{ vice_git_repo }}",
+            "scm_branch": "main"
+          }
+        status_code: [200, 201, 409]
+
+    - name: Create AWX inventory
+      uri:
+        url: "http://localhost:8052/api/v2/inventories/"
+        method: POST
+        headers:
+          Content-Type: application/json
+        user: admin
+        password: "{{ awx_admin_password }}"
+        body_format: json
+        body: |
+          {
+            "name": "VICE Infrastructure",
+            "description": "VICE Infrastructure Inventory",
+            "organization": 1
+          }
+        status_code: [200, 201, 409]
+
+    - name: Display AWX deployment status
+      debug:
+        msg: |
+          AWX/Ansible Automation Server deployed successfully!
+          
+          AWX Details:
+          - URL: http://{{ ansible_host }}:8052
+          - Username: admin
+          - Password: {{ awx_admin_password }}
+          
+          Ansible Configuration:
+          - Playbooks: /home/vice/ansible/playbooks/
+          - Inventories: /home/vice/ansible/inventory/
+          - Roles: /home/vice/ansible/roles/ 

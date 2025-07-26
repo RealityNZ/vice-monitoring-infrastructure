@@ -1,0 +1,66 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Network Overview",
+    "tags": ["network", "monitoring"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Network Traffic",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(node_network_receive_bytes_total[5m]) / 1024 / 1024",
+            "legendFormat": "{{instance}} - {{device}} - RX"
+          },
+          {
+            "expr": "rate(node_network_transmit_bytes_total[5m]) / 1024 / 1024",
+            "legendFormat": "{{instance}} - {{device}} - TX"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "MB/s"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Network Errors",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(node_network_receive_errs_total[5m])",
+            "legendFormat": "{{instance}} - {{device}} - RX Errors"
+          },
+          {
+            "expr": "rate(node_network_transmit_errs_total[5m])",
+            "legendFormat": "{{instance}} - {{device}} - TX Errors"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Network Drops",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(node_network_receive_drop_total[5m])",
+            "legendFormat": "{{instance}} - {{device}} - RX Drops"
+          },
+          {
+            "expr": "rate(node_network_transmit_drop_total[5m])",
+            "legendFormat": "{{instance}} - {{device}} - TX Drops"
+          }
+        ]
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  }
+} 

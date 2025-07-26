@@ -1,0 +1,33 @@
+# Discord Bot Configuration for {{ bot_name | default('vice-bot') }}
+bot:
+  token: "{{ bot_token | default('YOUR_BOT_TOKEN_HERE') }}"
+  prefix: "{{ bot_prefix | default('!') }}"
+  status: "{{ bot_status | default('online') }}"
+  activity: "{{ bot_activity | default('VICE Monitoring') }}"
+
+# Monitoring Configuration
+monitoring:
+  enabled: true
+  metrics_port: 8080
+  health_check_interval: 30
+  prometheus_url: "http://{{ monitoring_host_ip | default('172.16.20.10') }}:{{ prometheus_port | default('9090') }}"
+
+# Logging Configuration
+logging:
+  level: "{{ log_level | default('INFO') }}"
+  file: "/var/log/discord-bot/{{ bot_name | default('vice-bot') }}.log"
+  max_size: 10MB
+  backup_count: 5
+
+# Database Configuration (if needed)
+database:
+  enabled: false
+  type: "sqlite"
+  path: "/var/lib/discord-bot/{{ bot_name | default('vice-bot') }}.db"
+
+# Features Configuration
+features:
+  monitoring_alerts: true
+  system_status: true
+  custom_commands: true
+  auto_response: false 

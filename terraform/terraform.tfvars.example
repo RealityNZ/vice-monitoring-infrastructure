@@ -1,0 +1,27 @@
+# Proxmox VE API Configuration
+pve_api_url = "https://172.16.20.100:8006/api2/json"
+pve_token_id = "your-token-id@realm!token-name"
+pve_token_secret = "your-token-secret"
+
+# PVE Node Hostnames
+pve_node_a = "pve-node-a"
+pve_node_b = "pve-node-b"
+
+# Network Configuration
+vice_network = "172.16.20.0/24"
+monitoring_network = "172.20.0.0/16"
+
+# Optional: Override default VM specifications
+# vice_monitoring_cores = 4
+# vice_monitoring_memory = 8192
+# vice_monitoring_disk_size = 32
+
+# Optional: Override default bot specifications
+# vice_bot_one_cores = 2
+# vice_bot_one_memory = 4096
+# vice_bot_one_disk_size = 20
+
+# Optional: Override default AWX specifications
+# vice_awx_cores = 4
+# vice_awx_memory = 8192
+# vice_awx_disk_size = 50 

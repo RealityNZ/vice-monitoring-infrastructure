@@ -1,0 +1,38 @@
+groups:
+  - name: network
+    rules:
+      - alert: NetworkInterfaceDown
+        expr: node_network_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Network interface down on {{ $labels.instance }}"
+          description: "Network interface {{ $labels.device }} is down on {{ $labels.instance }}"
+
+      - alert: HighNetworkErrors
+        expr: rate(node_network_receive_errs_total[5m]) + rate(node_network_transmit_errs_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High network errors on {{ $labels.instance }}"
+          description: "Network interface {{ $labels.device }} has high error rate on {{ $labels.instance }}"
+
+      - alert: HighNetworkDrops
+        expr: rate(node_network_receive_drop_total[5m]) + rate(node_network_transmit_drop_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High network drops on {{ $labels.instance }}"
+          description: "Network interface {{ $labels.device }} has high drop rate on {{ $labels.instance }}"
+
+      - alert: NetworkSaturation
+        expr: (rate(node_network_receive_bytes_total[5m]) + rate(node_network_transmit_bytes_total[5m])) / 1024 / 1024 > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Network saturation on {{ $labels.instance }}"
+          description: "Network interface {{ $labels.device }} is saturated (>100MB/s) on {{ $labels.instance }}" 

@@ -1,0 +1,52 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "rules/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+
+  - job_name: 'discord-bot-one'
+    static_configs:
+      - targets: ['{{ vice_bot_one_ip }}:8080']
+    metrics_path: /metrics
+
+  - job_name: 'discord-bot-two'
+    static_configs:
+      - targets: ['{{ vice_bot_two_ip }}:8080']
+    metrics_path: /metrics
+
+  - job_name: 'vice-node-exporter-a'
+    static_configs:
+      - targets: ['{{ node_exporter_a_ip }}:9100']
+
+  - job_name: 'vice-node-exporter-b'
+    static_configs:
+      - targets: ['{{ node_exporter_b_ip }}:9100']
+
+  - job_name: 'awx'
+    static_configs:
+      - targets: ['{{ awx_server_ip }}:{{ awx_port }}']
+    metrics_path: /api/v2/metrics/
+
+  - job_name: 'as01'
+    static_configs:
+      - targets: ['{{ vice_as01_ip }}:9100'] 

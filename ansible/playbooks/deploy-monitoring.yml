@@ -1,0 +1,147 @@
+---
+- name: Deploy VICE Monitoring Stack
+  hosts: monitoring
+  become: yes
+  vars_files:
+    - ../vars/vault.yml
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      apt:
+        name:
+          - docker.io
+          - docker-compose
+          - python3-pip
+          - curl
+          - jq
+        state: present
+
+    - name: Add user to docker group
+      user:
+        name: vice
+        groups: docker
+        append: yes
+
+    - name: Create monitoring directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: vice
+        group: vice
+        mode: '0755'
+      loop:
+        - /home/vice/monitoring
+        - /home/vice/monitoring/prometheus
+        - /home/vice/monitoring/grafana
+        - /home/vice/monitoring/alertmanager
+        - /home/vice/monitoring/discord-bot
+
+    - name: Copy monitoring configuration files
+      copy:
+        src: "{{ playbook_dir }}/../files/{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: vice
+        group: vice
+        mode: '0644'
+      loop:
+        - { src: 'docker-compose-monitoring.yml', dest: '/home/vice/monitoring/docker-compose.yml' }
+        - { src: 'prometheus.yml', dest: '/home/vice/monitoring/prometheus/prometheus.yml' }
+        - { src: 'alertmanager.yml', dest: '/home/vice/monitoring/alertmanager/alertmanager.yml' }
+        - { src: 'grafana-datasource.yml', dest: '/home/vice/monitoring/grafana/provisioning/datasources/prometheus.yml' }
+
+    - name: Copy Prometheus rules
+      copy:
+        src: "{{ playbook_dir }}/../files/prometheus/rules/"
+        dest: /home/vice/monitoring/prometheus/rules/
+        owner: vice
+        group: vice
+        mode: '0644'
+
+    - name: Copy Prometheus targets
+      copy:
+        src: "{{ playbook_dir }}/../files/prometheus/targets/"
+        dest: /home/vice/monitoring/prometheus/targets/
+        owner: vice
+        group: vice
+        mode: '0644'
+
+    - name: Copy Grafana dashboards
+      copy:
+        src: "{{ playbook_dir }}/../files/grafana/dashboards/"
+        dest: /home/vice/monitoring/grafana/dashboards/
+        owner: vice
+        group: vice
+        mode: '0644'
+
+    - name: Copy Discord bot files
+      copy:
+        src: "{{ playbook_dir }}/../files/discord-bot/"
+        dest: /home/vice/monitoring/discord-bot/
+        owner: vice
+        group: vice
+        mode: '0644'
+
+    - name: Create environment file
+      template:
+        src: "{{ playbook_dir }}/../templates/monitoring.env.j2"
+        dest: /home/vice/monitoring/.env
+        owner: vice
+        group: vice
+        mode: '0600'
+
+    - name: Start monitoring stack
+      docker_compose:
+        project_src: /home/vice/monitoring
+        state: present
+      become_user: vice
+
+    - name: Wait for services to be ready
+      uri:
+        url: "http://localhost:{{ item.port }}/api/v1/status/config"
+        method: GET
+        status_code: 200
+      loop:
+        - { port: 9090, service: "Prometheus" }
+        - { port: 3000, service: "Grafana" }
+      register: service_status
+      retries: 30
+      delay: 10
+      until: service_status is succeeded
+
+    - name: Configure Grafana datasource
+      uri:
+        url: "http://localhost:3000/api/datasources"
+        method: POST
+        headers:
+          Content-Type: application/json
+        user: admin
+        password: "{{ grafana_admin_password }}"
+        body_format: json
+        body: |
+          {
+            "name": "Prometheus",
+            "type": "prometheus",
+            "access": "proxy",
+            "url": "http://prometheus:9090",
+            "isDefault": true,
+            "editable": true
+          }
+        status_code: [200, 409]
+      retries: 5
+      delay: 10
+      until: service_status is succeeded
+
+    - name: Display monitoring stack status
+      debug:
+        msg: |
+          Monitoring stack deployed successfully!
+          
+          Services:
+          - Prometheus: http://{{ ansible_host }}:9090
+          - Grafana: http://{{ ansible_host }}:3000 (admin/{{ grafana_admin_password }})
+          - Alertmanager: http://{{ ansible_host }}:9093
+          - Discord Bot: Running on {{ ansible_host }} 

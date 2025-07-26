@@ -1,0 +1,29 @@
+groups:
+  - name: discord-bot
+    rules:
+      - alert: DiscordBotDown
+        expr: up{job=~"discord-bot.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Discord Bot {{ $labels.instance }} is down"
+          description: "Discord Bot {{ $labels.instance }} has been down for more than 1 minute."
+
+      - alert: DiscordBotHighLatency
+        expr: http_request_duration_seconds{job=~"discord-bot.*"} > 5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Discord Bot {{ $labels.instance }} has high latency"
+          description: "Discord Bot {{ $labels.instance }} is experiencing high latency (>5s)."
+
+      - alert: DiscordBotErrorRate
+        expr: rate(http_requests_total{job=~"discord-bot.*",status=~"5.."}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Discord Bot {{ $labels.instance }} has high error rate"
+          description: "Discord Bot {{ $labels.instance }} is experiencing a high error rate (>10%)." 

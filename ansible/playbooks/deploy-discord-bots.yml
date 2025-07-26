@@ -1,0 +1,107 @@
+---
+- name: Deploy VICE Discord Bots
+  hosts: discord_bots
+  become: yes
+  vars_files:
+    - ../vars/vault.yml
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      apt:
+        name:
+          - docker.io
+          - docker-compose
+          - python3
+          - python3-pip
+          - git
+        state: present
+
+    - name: Add user to docker group
+      user:
+        name: vice
+        groups: docker
+        append: yes
+
+    - name: Create bot directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: vice
+        group: vice
+        mode: '0755'
+      loop:
+        - /home/vice/vice-bot-{{ bot_instance }}
+        - /home/vice/vice-bot-{{ bot_instance }}/src
+        - /home/vice/vice-bot-{{ bot_instance }}/data
+
+    - name: Copy Discord bot files
+      copy:
+        src: "{{ playbook_dir }}/../files/discord-bot/"
+        dest: /home/vice/vice-bot-{{ bot_instance }}/
+        owner: vice
+        group: vice
+        mode: '0644'
+
+    - name: Create bot configuration
+      template:
+        src: "{{ playbook_dir }}/../templates/discord-bot-config.yml.j2"
+        dest: /home/vice/vice-bot-{{ bot_instance }}/config.yml
+        owner: vice
+        group: vice
+        mode: '0600'
+      vars:
+        bot_instance: "{{ bot_instance }}"
+        bot_token: "{{ bot_token }}"
+        bot_prefix: "{{ bot_prefix }}"
+        prometheus_url: "{{ prometheus_url }}"
+
+    - name: Create Docker Compose file for bot
+      template:
+        src: "{{ playbook_dir }}/../templates/discord-bot-docker-compose.yml.j2"
+        dest: /home/vice/vice-bot-{{ bot_instance }}/docker-compose.yml
+        owner: vice
+        group: vice
+        mode: '0644'
+      vars:
+        bot_instance: "{{ bot_instance }}"
+        bot_token: "{{ bot_token }}"
+        prometheus_url: "{{ prometheus_url }}"
+
+    - name: Install Python dependencies
+      pip:
+        requirements: /home/vice/vice-bot-{{ bot_instance }}/requirements.txt
+        virtualenv: /home/vice/vice-bot-{{ bot_instance }}/venv
+        virtualenv_command: python3 -m venv
+      become_user: vice
+
+    - name: Start Discord bot
+      docker_compose:
+        project_src: /home/vice/vice-bot-{{ bot_instance }}
+        state: present
+      become_user: vice
+
+    - name: Wait for bot to be ready
+      uri:
+        url: "http://localhost:8080/health"
+        method: GET
+        status_code: 200
+      register: bot_status
+      retries: 10
+      delay: 5
+      until: bot_status is succeeded
+      ignore_errors: yes
+
+    - name: Display bot deployment status
+      debug:
+        msg: |
+          Discord Bot {{ bot_instance }} deployed successfully!
+          
+          Bot Details:
+          - Instance: {{ bot_instance }}
+          - IP: {{ ansible_host }}
+          - Status: Running
+          - Prometheus Integration: {{ prometheus_url }} 

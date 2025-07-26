@@ -1,0 +1,7 @@
+- targets:
+  - "172.16.20.20:8080"
+  - "172.16.20.21:8080"
+  labels:
+    job: "discord-bot"
+    environment: "production"
+    service: "discord-bot" 
