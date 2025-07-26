@@ -1,6 +1,4 @@
-# Application VMs (PVE Node B)
-
-# Vice Bot One
+# VICE Application VMs on PVE Node B
 resource "proxmox_vm_qemu" "vice_bot_one" {
   name        = "vice-bot-one"
   desc        = "VICE Discord Bot Instance One"
@@ -13,11 +11,17 @@ resource "proxmox_vm_qemu" "vice_bot_one" {
   agent       = 1
   os_type     = "cloud-init"
   ipconfig0   = "ip=172.16.20.20/24,gw=172.16.20.1"
-  
+
   scsihw = "virtio-scsi-pci"
   bootdisk = "scsi0"
-  scsi0 = "local-lvm:20,format=raw"
   
+  disk {
+    type    = "scsi"
+    storage = "local-lvm"
+    size    = "20G"
+    slot    = 0
+  }
+
   network {
     bridge = "vmbr0"
     model  = "virtio"
@@ -45,7 +49,6 @@ resource "proxmox_vm_qemu" "vice_bot_one" {
   }
 }
 
-# Vice Bot Two
 resource "proxmox_vm_qemu" "vice_bot_two" {
   name        = "vice-bot-two"
   desc        = "VICE Discord Bot Instance Two"
@@ -58,11 +61,17 @@ resource "proxmox_vm_qemu" "vice_bot_two" {
   agent       = 1
   os_type     = "cloud-init"
   ipconfig0   = "ip=172.16.20.21/24,gw=172.16.20.1"
-  
+
   scsihw = "virtio-scsi-pci"
   bootdisk = "scsi0"
-  scsi0 = "local-lvm:20,format=raw"
   
+  disk {
+    type    = "scsi"
+    storage = "local-lvm"
+    size    = "20G"
+    slot    = 0
+  }
+
   network {
     bridge = "vmbr0"
     model  = "virtio"
@@ -71,7 +80,6 @@ resource "proxmox_vm_qemu" "vice_bot_two" {
   ciuser = "vice"
   sshkeys = file("${path.module}/ssh/vice-monitoring.pub")
 
-  # Provision Discord Bot
   provisioner "remote-exec" {
     inline = [
       "echo 'Setting up Vice Bot Two'",
@@ -90,10 +98,9 @@ resource "proxmox_vm_qemu" "vice_bot_two" {
   }
 }
 
-# AS01 Application Server
 resource "proxmox_vm_qemu" "vice_as01" {
   name        = "vice-as01"
-  desc        = "VICE Application Server 01"
+  desc        = "VICE Application Server One"
   target_node = var.pve_node_b
   clone       = "ubuntu-22.04-template"
   full_clone  = true
@@ -103,11 +110,17 @@ resource "proxmox_vm_qemu" "vice_as01" {
   agent       = 1
   os_type     = "cloud-init"
   ipconfig0   = "ip=172.16.20.30/24,gw=172.16.20.1"
-  
+
   scsihw = "virtio-scsi-pci"
   bootdisk = "scsi0"
-  scsi0 = "local-lvm:40,format=raw"
   
+  disk {
+    type    = "scsi"
+    storage = "local-lvm"
+    size    = "40G"
+    slot    = 0
+  }
+
   network {
     bridge = "vmbr0"
     model  = "virtio"
@@ -116,14 +129,12 @@ resource "proxmox_vm_qemu" "vice_as01" {
   ciuser = "vice"
   sshkeys = file("${path.module}/ssh/vice-monitoring.pub")
 
-  # Provision Application Server
   provisioner "remote-exec" {
     inline = [
-      "echo 'Setting up Vice AS01'",
+      "echo 'Setting up AS01'",
       "sudo apt update",
-      "sudo apt install -y docker.io docker-compose nginx python3 python3-pip",
-      "sudo usermod -aG docker vice",
-      "mkdir -p /home/vice/vice-apps"
+      "sudo apt install -y docker.io docker-compose nginx",
+      "sudo usermod -aG docker vice"
     ]
 
     connection {
@@ -135,10 +146,9 @@ resource "proxmox_vm_qemu" "vice_as01" {
   }
 }
 
-# Node Exporter VM (for PVE Node B monitoring)
 resource "proxmox_vm_qemu" "vice_node_exporter_b" {
   name        = "vice-node-exporter-b"
-  desc        = "Node Exporter for PVE Node B"
+  desc        = "Node Exporter for PVE Node B monitoring"
   target_node = var.pve_node_b
   clone       = "ubuntu-22.04-template"
   full_clone  = true
@@ -148,11 +158,17 @@ resource "proxmox_vm_qemu" "vice_node_exporter_b" {
   agent       = 1
   os_type     = "cloud-init"
   ipconfig0   = "ip=172.16.20.31/24,gw=172.16.20.1"
-  
+
   scsihw = "virtio-scsi-pci"
   bootdisk = "scsi0"
-  scsi0 = "local-lvm:8,format=raw"
   
+  disk {
+    type    = "scsi"
+    storage = "local-lvm"
+    size    = "8G"
+    slot    = 0
+  }
+
   network {
     bridge = "vmbr0"
     model  = "virtio"
@@ -160,4 +176,26 @@ resource "proxmox_vm_qemu" "vice_node_exporter_b" {
 
   ciuser = "vice"
   sshkeys = file("${path.module}/ssh/vice-monitoring.pub")
+
+  lifecycle {
+    ignore_changes = [
+      network,
+    ]
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "echo 'Node Exporter VM is ready'",
+      "sudo apt update",
+      "sudo apt install -y docker.io",
+      "sudo usermod -aG docker vice"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "vice"
+      private_key = file("${path.module}/ssh/vice-monitoring")
+      host        = "172.16.20.31"
+    }
+  }
 } 

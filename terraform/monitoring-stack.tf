@@ -1,4 +1,4 @@
-# Monitoring Stack VM (PVE Node A)
+# VICE Monitoring Stack VMs
 resource "proxmox_vm_qemu" "vice_monitoring" {
   name        = "vice-monitoring"
   desc        = "VICE Monitoring Stack - Prometheus, Grafana, Alertmanager"
@@ -11,12 +11,18 @@ resource "proxmox_vm_qemu" "vice_monitoring" {
   agent       = 1
   os_type     = "cloud-init"
   ipconfig0   = "ip=172.16.20.10/24,gw=172.16.20.1"
-  
+
   # Storage configuration
   scsihw = "virtio-scsi-pci"
   bootdisk = "scsi0"
-  scsi0 = "local-lvm:32,format=raw"
   
+  disk {
+    type    = "scsi"
+    storage = "local-lvm"
+    size    = "32G"
+    slot    = 0
+  }
+
   # Network configuration
   network {
     bridge = "vmbr0"
@@ -52,10 +58,9 @@ resource "proxmox_vm_qemu" "vice_monitoring" {
   }
 }
 
-# Node Exporter VM (for PVE Node A monitoring)
 resource "proxmox_vm_qemu" "vice_node_exporter_a" {
   name        = "vice-node-exporter-a"
-  desc        = "Node Exporter for PVE Node A"
+  desc        = "Node Exporter for PVE Node A monitoring"
   target_node = var.pve_node_a
   clone       = "ubuntu-22.04-template"
   full_clone  = true
@@ -65,11 +70,17 @@ resource "proxmox_vm_qemu" "vice_node_exporter_a" {
   agent       = 1
   os_type     = "cloud-init"
   ipconfig0   = "ip=172.16.20.11/24,gw=172.16.20.1"
-  
+
   scsihw = "virtio-scsi-pci"
   bootdisk = "scsi0"
-  scsi0 = "local-lvm:8,format=raw"
   
+  disk {
+    type    = "scsi"
+    storage = "local-lvm"
+    size    = "8G"
+    slot    = 0
+  }
+
   network {
     bridge = "vmbr0"
     model  = "virtio"
@@ -77,4 +88,26 @@ resource "proxmox_vm_qemu" "vice_node_exporter_a" {
 
   ciuser = "vice"
   sshkeys = file("${path.module}/ssh/vice-monitoring.pub")
+
+  lifecycle {
+    ignore_changes = [
+      network,
+    ]
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "echo 'Node Exporter VM is ready'",
+      "sudo apt update",
+      "sudo apt install -y docker.io",
+      "sudo usermod -aG docker vice"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "vice"
+      private_key = file("${path.module}/ssh/vice-monitoring")
+      host        = "172.16.20.11"
+    }
+  }
 } 

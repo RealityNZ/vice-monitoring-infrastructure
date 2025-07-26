@@ -1,4 +1,4 @@
-# AWX/Ansible Automation Server
+# AWX/Ansible Automation VMs
 resource "proxmox_vm_qemu" "vice_awx" {
   name        = "vice-awx"
   desc        = "AWX/Ansible Automation Server for VICE Infrastructure"
@@ -11,11 +11,17 @@ resource "proxmox_vm_qemu" "vice_awx" {
   agent       = 1
   os_type     = "cloud-init"
   ipconfig0   = "ip=172.16.20.40/24,gw=172.16.20.1"
-  
+
   scsihw = "virtio-scsi-pci"
   bootdisk = "scsi0"
-  scsi0 = "local-lvm:50,format=raw"
   
+  disk {
+    type    = "scsi"
+    storage = "local-lvm"
+    size    = "50G"
+    slot    = 0
+  }
+
   network {
     bridge = "vmbr0"
     model  = "virtio"
@@ -44,10 +50,9 @@ resource "proxmox_vm_qemu" "vice_awx" {
   }
 }
 
-# Terraform Backend Storage (for state management)
 resource "proxmox_vm_qemu" "vice_terraform_backend" {
   name        = "vice-terraform-backend"
-  desc        = "Terraform Backend Storage and State Management"
+  desc        = "Terraform State Backend Server"
   target_node = var.pve_node_a
   clone       = "ubuntu-22.04-template"
   full_clone  = true
@@ -57,11 +62,17 @@ resource "proxmox_vm_qemu" "vice_terraform_backend" {
   agent       = 1
   os_type     = "cloud-init"
   ipconfig0   = "ip=172.16.20.41/24,gw=172.16.20.1"
-  
+
   scsihw = "virtio-scsi-pci"
   bootdisk = "scsi0"
-  scsi0 = "local-lvm:30,format=raw"
   
+  disk {
+    type    = "scsi"
+    storage = "local-lvm"
+    size    = "30G"
+    slot    = 0
+  }
+
   network {
     bridge = "vmbr0"
     model  = "virtio"
@@ -70,7 +81,6 @@ resource "proxmox_vm_qemu" "vice_terraform_backend" {
   ciuser = "vice"
   sshkeys = file("${path.module}/ssh/vice-monitoring.pub")
 
-  # Provision Terraform Backend
   provisioner "remote-exec" {
     inline = [
       "echo 'Setting up Terraform Backend'",
