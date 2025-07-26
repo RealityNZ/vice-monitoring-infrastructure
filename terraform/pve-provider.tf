@@ -17,12 +17,12 @@ provider "proxmox" {
   pm_tls_insecure     = true
 }
 
-# Provider for PVE Node B
+# Provider for PVE Node B (using same token as Node A since clustered)
 provider "proxmox" {
   alias               = "pve_node_b"
   pm_api_url          = var.pve_api_url_b
-  pm_api_token_id     = var.pve_token_id_b
-  pm_api_token_secret = var.pve_token_secret_b
+  pm_api_token_id     = var.pve_token_id
+  pm_api_token_secret = var.pve_token_secret
   pm_tls_insecure     = true
 }
 
