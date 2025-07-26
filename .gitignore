@@ -203,4 +203,10 @@ test_*
 
 # Configuration overrides
 config.local.yml
-config.production.yml 
+config.production.yml
+
+# Terraform SSH keys (sensitive)
+terraform/ssh/vice-monitoring
+terraform/ssh/vice-monitoring.pub
+terraform/ssh/pve-root
+terraform/ssh/pve-root.pub 
